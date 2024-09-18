@@ -1,6 +1,7 @@
 import requests
 import json
 import brotli
+import platform
 
 from seleniumwire import webdriver  
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,6 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
 
 from utils import *
 
@@ -35,7 +37,7 @@ def selenium_get_schedule_main(username_get, password_get):
 def start_webdriver():
     def start_firefox():
         options = FirefoxOptions()
-        # options.headless = True  # Enable headless mode
+        options.add_argument("--headless")
         options.set_preference("dom.webnotifications.enabled", False)  # Disable notifications
         options.set_preference("permissions.default.image", 2)  # Disable image loading
         options.add_argument("--window-size=1024,768") # reduce window size
@@ -46,45 +48,58 @@ def start_webdriver():
         return driver
 
     def start_chrome():
-        options = ChromeOptions()
-        
-        # options.add_argument("--headless")
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless=new')
+        options.add_argument("--ignore-certificate-errors")
+        # options.add_argument("--allow-insecure-localhost")
+        options.add_argument('--enable-automation')
         options.add_argument("--disable-notifications")
-
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        options.add_experimental_option("prefs", prefs)
-        options.add_argument("--window-size=1024,768")
-        options.add_argument("about:blank")
         driver = webdriver.Chrome(options=options)
+
+        return driver
+
+    def start_safari():
+        options = webdriver.SafariOptions()
+        driver = webdriver.Safari(options=options)
 
         return driver
 
     global driver
 
     pref_webdriver = check_browser_preference()
-    if not pref_webdriver:
-        browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
-        
-        start_timer()
-        
-        if browser_select == str(1):
-            timelog(f"Initiating Firefox WebDriver...")
-            driver = start_firefox() 
-        else:
-            timelog(f"Initiating Chrome WebDriver...")
-            driver = start_chrome()
-
-    else: 
+    if pref_webdriver:
         start_timer()
         timelog(f"Initiating WebDriver...")
         if pref_webdriver == 'firefox': driver = start_firefox() 
-        else: driver = start_chrome()
+        elif pref_webdriver == 'chrome': driver = start_chrome()
+        elif pref_webdriver == 'safari': driver = start_safari()
+        return 
+
+    
+    if platform.system() == "Darwin":
+        timelog(f"Initiating Safari WebDriver...")
+        start_timer()
+        driver = start_safari()
+        return
+
+
+    browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
+
+    start_timer()
+
+    if browser_select == str(1):
+        timelog(f"Initiating Firefox WebDriver...")
+        driver = start_firefox()
+    else:
+        timelog(f"Initiating Chrome WebDriver...")
+        driver = start_chrome()
+
 
 def log_into_intranet():
     global driver, username, password
     timelog(f"Opening login page: {login_url}...")
     driver.get(login_url)
-
+    timelog(f"Loading login page (might take up to 30s).")
     user_box_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "username")))
     timelog(f"Page elements loaded...")
     user_box_element.send_keys(username)

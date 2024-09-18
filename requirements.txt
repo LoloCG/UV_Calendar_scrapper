@@ -1,0 +1,8 @@
+ics
+python-dotenv
+brotli
+blinker==1.7.0
+selenium-wire
+webdriver-manager
+pandas
+requests

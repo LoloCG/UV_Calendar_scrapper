@@ -10,7 +10,7 @@ However, there are several key improvements that make this solution superior:
 - The events dont display Subject and Group IDs, which clutter the view of the Calendar.
 
 **Resulting calendar in Google Calendar:**
-![Resulting Calendar in Google Calendar](images\google_calendar_result.png)
+![Resulting Calendar in Google Calendar](images/google_calendar_result.png)
 
 # Installation
 The .exe file can be downloaded through the latest [release page](https://github.com/LoloCG/UV_Calendar_scrapper/releases/), or directly from [here](https://github.com/LoloCG/UV_Calendar_scrapper/releases/download/v1.2/main.exe)
@@ -29,5 +29,5 @@ The script will then log into AulaVirtual and retrieve your personal schedule ca
 Note: it is common for the program to take a while when opening the Login page and Home, as the whole AulaVirtual Webpage framework has to load many dynamic elements. 
 
 **Example terminal output (from VSCode)**
-![terminal example text](images\ExampleTerminal.png)
+![terminal example text](images/ExampleTerminal.png)
 

@@ -2,6 +2,7 @@ import pandas as pd
 from ics import Calendar, Event
 import json
 from datetime import datetime
+from utils import *
 
 def main_ics_formater():
     schedule_df = convert_schedule_json_to_df()
@@ -60,7 +61,7 @@ def convert_schedule_json_to_df():
 
         df = pd.json_normalize(items)
         return df
-    
+    timelog(f"Converting data from Schedule Calendar.")
     df = obtain_df_from_json()
 
     wanted_columns = ['inicio', 'fin', 'nombre_lugar', 'nombre_asignatura', 'nombre_actividad', 'identificador_grupo','identificador_edificio'] # , 'codigo_asignatura'
@@ -133,7 +134,7 @@ def convert_event_cal_ics_to_df():
             return 'Obligatory class'
         else:
             return 'event'
- 
+    timelog(f"Converting data from Event Calendar.")
     ics_file_path = 'generated_files/event_calendar.ics'
     with open(ics_file_path, 'r',encoding='utf-8') as f:
         calendar = Calendar(f.read())
@@ -176,11 +177,13 @@ def convert_event_cal_ics_to_df():
     return df
 
 def join_both_df(schedule_df, events_df):
+    timelog(f"Merging data.")
     df = pd.concat([schedule_df, events_df], axis=0)
 
     return df
 
 def convert_df_to_ics(df):
+    timelog(f"Converting data into .ics file.")
     calendar = Calendar()
 
     for _, row in df.iterrows():
@@ -200,4 +203,4 @@ def convert_df_to_ics(df):
     with open(filename, 'w', encoding='utf-8') as f:
         f.writelines(calendar)
 
-    print(f"Calendar saved to {filename}")
+    timelog(f"Calendar saved to {filename}")

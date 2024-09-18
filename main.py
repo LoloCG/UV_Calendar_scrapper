@@ -6,16 +6,18 @@ import os
 username, password = None, None
 
 def main():
-    global username, password
-    print("Starting script...")
+    if not check_already_created_files():
+        global username, password
+        print("Starting script...")
 
-    username, password = check_credentials()
-    if username is None and password is None: 
-        username, password = ask_for_credentials()
+        username, password = check_credentials()
+        if username is None and password is None: 
+            username, password = ask_for_credentials()
 
-    start_timer()
+        wsr.selenium_get_schedule_main(username, password)
 
-    wsr.selenium_get_schedule_main(username, password)
+    icsf.main_ics_formater()
+    timelog("Ending program.")
 
 def check_already_created_files():
     root_dir = os.getcwd()
@@ -28,8 +30,4 @@ def check_already_created_files():
         return True
     else: return False
 
-if not check_already_created_files():
-    main()
-    icsf.main_ics_formater()
-else:
-    icsf.main_ics_formater()
+main()

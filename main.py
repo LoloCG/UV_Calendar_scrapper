@@ -6,6 +6,7 @@ import os
 username, password = None, None
 
 def main():
+    print("Version v1.1.")
     if not check_already_created_files():
         global username, password
         print("Starting script...")

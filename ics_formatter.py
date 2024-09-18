@@ -14,9 +14,6 @@ def main_ics_formater():
     convert_df_to_ics(combined_df)
 
 def convert_schedule_json_to_df():
-    '''
-        final columns: ['asignatura', 'actividad', 'grupo', 'DTSTART', 'DTEND', 'lugar']
-    '''
     def convert_dates_to_ics_standard(df):
         df['DTSTART'] = pd.to_datetime(df['inicio'], utc=True)
         df['DTSTART'] = df['DTSTART'].dt.strftime('%Y%m%dT%H%M%SZ')
@@ -54,7 +51,7 @@ def convert_schedule_json_to_df():
         return summary
 
     def obtain_df_from_json():
-        with open('generated_files/schedule.json', 'r', encoding='utf-8') as f:
+        with open('schedule.json', 'r', encoding='utf-8') as f:
             data = json.load(f)  
         
         items = data.get('items', [])  
@@ -98,29 +95,7 @@ def convert_schedule_json_to_df():
     return df
 
 def convert_event_cal_ics_to_df():
-    ''' 
-        Example output in original event calendar ics:
-            BEGIN:VCALENDAR
-            METHOD:PUBLISH
-            PRODID:-//Moodle Pty Ltd//NONSGML Moodle Version 2022112809.02//EN
-            VERSION:2.0
-            
-            BEGIN:VEVENT
-            UID:8314693@aulavirtual.uv.es
-            SUMMARY:Asistencia S1 s'obre el
-            DESCRIPTION:
-            CLASS:PUBLIC
-            LAST-MODIFIED:20240909T141113Z
-            DTSTAMP:20240918T062706Z
-            DTSTART:20240925T092000Z
-            DTEND:20240925T092000Z
-            CATEGORIES:2024-25 Gestió i planificació farmacèutiques Gr.DG-T (34072)
-            END:VEVENT
 
-        columns to process: description, dtstamp
-        final columns: ['short_descript', 'last_modified', 'DTSTART', 'DTEND', 'actividad','asignatura']
-        columns to achieve: ['asignatura', 'actividad', 'grupo', 'DTSTART', 'DTEND', 'lugar']
-    '''
     def categorize_activity(short_descript):
         exercises_keywords = ['cuestionario','questionario','quiz','tarea','evaluación continua']
         exam_keywords = ['exam','test','examen']
@@ -135,7 +110,7 @@ def convert_event_cal_ics_to_df():
         else:
             return 'event'
     timelog(f"Converting data from Event Calendar.")
-    ics_file_path = 'generated_files/event_calendar.ics'
+    ics_file_path = 'event_calendar.ics'
     with open(ics_file_path, 'r',encoding='utf-8') as f:
         calendar = Calendar(f.read())
 

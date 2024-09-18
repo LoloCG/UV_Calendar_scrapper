@@ -9,6 +9,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
 
+from selenium.webdriver.chrome.options import Options
+
 from utils import *
 
 login_url = r"https://intranet.uv.es/portal/login"
@@ -30,18 +32,44 @@ def selenium_get_schedule_main(username_get, password_get):
     get_calendar_ics()
 
 def start_webdriver():
-    global driver
-    timelog(f"Initiating WebDriver...")
-    # For firefox only
-    options = Options()
-    # options.headless = True  # Enable headless mode
-    options.set_preference("dom.webnotifications.enabled", False)  # Disable notifications
-    options.set_preference("permissions.default.image", 2)  # Disable image loading
-    options.add_argument("--window-size=1024,768") # reduce window size
-    options.set_preference("browser.startup.homepage", "about:blank")  # Skip homepage
+    def start_firefox():
+        global driver
+        options = Options()
+        # options.headless = True  # Enable headless mode
+        options.set_preference("dom.webnotifications.enabled", False)  # Disable notifications
+        options.set_preference("permissions.default.image", 2)  # Disable image loading
+        options.add_argument("--window-size=1024,768") # reduce window size
+        options.set_preference("browser.startup.homepage", "about:blank")  # Skip homepage
 
-    driver = webdriver.Firefox(options=options)
+        driver = webdriver.Firefox(options=options)
+
+        return driver
+
+    def start_chrome():
+        global driver
+        options = Options()
+        
+        # options.add_argument("--headless")
+        options.add_argument("--disable-notifications")
+
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument("--window-size=1024,768")
+        options.add_argument("about:blank")
+        driver = webdriver.Chrome(options=options)
+
+        return driver
+
+    global driver
+
+    browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
     
+    if browser_select == 1: driver = start_firefox() 
+    else: driver = start_chrome()
+
+    start_timer()
+    timelog(f"Initiating WebDriver...")
+
 def log_into_intranet():
     global driver, username, password
     timelog(f"Opening login page: {login_url}...")

@@ -33,10 +33,3 @@ if not check_files_in_root():
     icsf.main_ics_formater()
 else:
     icsf.main_ics_formater()
-
-
-
-
-
-
-

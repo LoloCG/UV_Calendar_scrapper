@@ -3,3 +3,5 @@ __pycache__/
 cookies.json
 schedule.json
 event_calendar.ics
+events.csv
+schedule.csv

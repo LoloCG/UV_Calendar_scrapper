@@ -9,3 +9,4 @@ university_calendar.ics
 venv/
 dist/
 build/
+main.spec

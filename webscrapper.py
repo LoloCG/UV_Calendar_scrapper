@@ -5,6 +5,10 @@ from seleniumwire import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
+
 from utils import *
 
 login_url = r"https://intranet.uv.es/portal/login"
@@ -13,25 +17,40 @@ event_calendar_url = r"https://aulavirtual.uv.es/calendar/export.php?"
 
 driver = None
 
-def selenium_get_schedule_main():
-    global driver 
-    timelog(f"Initiating WebDriver...")
-    driver = webdriver.Firefox()
+def selenium_get_schedule_main(username_get, password_get):
+    global driver, username, password
+    username, password = username_get, password_get
 
-    log_into_page()
+    start_webdriver()
+
+    log_into_intranet()
     navigate_to_homepage()
     enter_schedule_pag()
     get_schedule_JSON_req()
     get_calendar_ics()
 
-# ========= In the login URL =========
-def log_into_page():
+def start_webdriver():
     global driver
+    timelog(f"Initiating WebDriver...")
+    # For firefox only
+    options = Options()
+    # options.headless = True  # Enable headless mode
+    options.set_preference("dom.webnotifications.enabled", False)  # Disable notifications
+    options.set_preference("permissions.default.image", 2)  # Disable image loading
+    options.add_argument("--window-size=1024,768") # reduce window size
+    options.set_preference("browser.startup.homepage", "about:blank")  # Skip homepage
+
+    driver = webdriver.Firefox(options=options)
+    
+    # for both
+    # driver.implicitly_wait(15)
+
+def log_into_intranet():
+    global driver, username, password
     timelog(f"Opening login page: {login_url}...")
     driver.get(login_url)
 
-    # wait until the element is loaded to enter all the data
-    user_box_element = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "username")))
+    user_box_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "username")))
     timelog(f"Page elements loaded...")
     user_box_element.send_keys(username)
 
@@ -43,17 +62,14 @@ def log_into_page():
     login_button = driver.find_element(By.ID, "botonLdap")
     login_button.click()
 
-# ========= In the Home URL =========
 def navigate_to_homepage():
     global driver
     timelog(f"Waiting for Home page to load...")
-    # Use the schedule button as element to wait loading until proceeding
     schedule_css_selector = "div.MuiBox-root:nth-child(3) > div:nth-child(2) > div:nth-child(1) > ul:nth-child(2) > li:nth-child(5) > button:nth-child(1) > div:nth-child(1) > div:nth-child(1)"
-    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, schedule_css_selector)))
+    WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, schedule_css_selector)))
 
     timelog(f"Loaded pag: {driver.current_url}.")
 
-# ========= In the Calendar URL =========
 def enter_schedule_pag():
     global driver
     max_retries = 3
@@ -82,7 +98,6 @@ def enter_schedule_pag():
             timelog(f"ERROR: Max retries reached, exiting script...")
             exit()
 
-# ========= Search for request performed after getting into the calendar URL ========
 def get_schedule_JSON_req():
     global driver
     timelog(f"Searching for Calendar schedule JSON requests...")
@@ -107,24 +122,53 @@ def get_schedule_JSON_req():
     else:
         timelog(f"Failed to capture calendar JSON data...")
 
+def log_into_aules():
+    global driver, username, password
+    timelog(f"Login into Aules as internal user...")
+
+    aules_login_internal = driver.find_element(By.ID, 'theme_boost_union-loginorder-idp').click()
+    if not aules_login_internal:
+        return
+
+    user_box_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'username')))
+    timelog(f"Page elements loaded...")
+    user_box_element.send_keys(username)
+
+    pass_box_element = driver.find_element(By.ID, 'password')
+    pass_box_element.send_keys(password)
+
+    login_button = driver.find_element(By.ID, 'botonLdap')
+    login_button.click()
+
+    timelog(f"Logged into Aules")
 
 def get_calendar_ics():
     global driver
     timelog(f"Opening event calendar page: {event_calendar_url}.")
+    driver.get(event_calendar_url)
+
+    aules_login_internal = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'theme_boost_union-loginorder-idp')))
+    
+    if aules_login_internal:
+        log_into_aules()
+        all_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'page-header-headings')))
+        timelog(f"Opening event calendar page: {event_calendar_url}.")
+        driver.get(event_calendar_url)
 
     all_button_id = "id_events_exportevents_all"
     all_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, all_button_id)))
+    timelog(f"Page elements loaded. Obtaining download URL...")
     all_button.click()
 
-    interval_button_id = "id_period_timeperiod_custom"
-    driver.find_element(By.ID, interval_button_id).click()
-
-    export_url_ele_id = "calendarexporturl"
-    export_url_ele = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, export_url_id)))
-    timelog(f"Obtaining event calendar file.")
-    export_url = export_url_ele.get_attribute("value")
+    driver.find_element(By.ID, "id_period_timeperiod_custom").click()
     
-    ics_response = requests.get(export_url)
+    driver.find_element(By.ID, "id_generateurl").click()
+
+    export_url_ele = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "calendarexporturl")))
+    export_url_ele = export_url_ele.get_attribute("value")
+
+    timelog(f"Obtaining event calendar file.")
+    ics_response = requests.get(export_url_ele)
     
     ics_file_path = 'event_calendar.ics'
     with open(ics_file_path, 'wb') as f:

@@ -2,7 +2,10 @@ from utils import *
 import webscrapper as wsr
 import os
 
+username, password = None, None
+
 def main():
+    global username, password
     print("Starting script...")
 
     username, password = check_credentials()
@@ -11,8 +14,6 @@ def main():
 
     start_timer()
 
-    wsr.selenium_get_schedule_main()
+    wsr.selenium_get_schedule_main(username, password)
 
 main()
-
-print(f"Total time elapsed since start: {start_time}")

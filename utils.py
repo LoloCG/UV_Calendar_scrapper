@@ -29,6 +29,16 @@ def check_credentials():
     print("User credentials found in .env file.")
     return username, password
 
+def check_browser_preference():
+    load_dotenv()
+
+    web_driver = os.getenv('WEB_DRIVER')
+
+    if not web_driver:
+        return None
+
+    return web_driver
+    
 def ask_for_credentials():
     username = input(f"Enter username: ")
     password = getpass.getpass("Enter password: ")

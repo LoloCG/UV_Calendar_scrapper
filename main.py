@@ -6,7 +6,7 @@ import os
 username, password = None, None
 
 def main():
-    print("Version v1.1.")
+    print("Version v1.2.")
     if not check_already_created_files():
         global username, password
         print("Starting script...")
@@ -18,6 +18,9 @@ def main():
         wsr.selenium_get_schedule_main(username, password)
 
     icsf.main_ics_formater()
+    
+    delete_leftover_files()
+    
     timelog("Ending program.")
 
 def check_already_created_files():
@@ -30,5 +33,14 @@ def check_already_created_files():
         print(f"Both 'event_calendar.ics' and 'schedule.json' are present in the root directory.")
         return True
     else: return False
+
+def delete_leftover_files():
+    timelog(f"Deleting garbage files generated.")
+    files_to_remove = ["event_calendar.ics", "schedule.json"]
+    for file_path in files_to_remove:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            timelog(f"Removed {file_path}.")
+
 
 main()

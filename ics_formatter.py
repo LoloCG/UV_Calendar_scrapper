@@ -1,42 +1,44 @@
+"""
+    For each event:
+    - `BEGIN:VEVENT` / `END:VEVENT`: Marks the start and end of each event in the calendar.
+    - `UID`: A globally unique identifier for the event (used for synchronization across calendars).
+    - `DTSTAMP`: The date and time the event was created or last modified, usually in UTC.
+    - `DTSTART`: The start date and time of the event, in UTC or local time with a time zone.
+    - SUMMARY
+    - DESCRIPTION
+    - LOCATION
+
+"""
+
 import pandas as pd
 from ics import Calendar
 import json
 
 def main_ics_formater():
-    convert_schedule_json_to_df()
+    # schedule_df = convert_schedule_json_to_df()
+    # schedule_df.to_csv('schedule.csv', index=False, sep=';',header=True)
+
+    events_df = convert_event_cal_ics_to_df()
+    events_df.to_csv('events.csv', index=False, sep=';',header=True)
+    print(events_df)
 
 def convert_schedule_json_to_df():
     '''
-        Example output in original schedule json:
-            "tipo_franja": "ALU",
-            "periodo_academico": "2024-25",
-            "inicio": "2024-09-16T08:00:00Z",
-            "fin": "2024-09-16T09:00:00Z",
-            "descripcion_periodo": " ",
-            "nombre_lugar": "AULA AF-14 B",
-            "identificador_edificio": "21",
-            "capacidad_aula": null,
-            "capacidad_examen_aula": null,
-            "codigo_asignatura": 34082,
-            "identificador_asignatura": "      000034082",
-            "aula_virtual_link": null,
-            "nombre_asignatura": "TECNOLOGÍA FARMACEUTICA I",
-            "codigo_actividad": 7061,
-            "nombre_actividad": "Teoría (34082)",
-            "codigo_grupo": 41210,
-            "identificador_grupo": "DG-T",
-            "nombre_grupo": "Grupo teoría",
-            "profesores": [...]
-        categories required:
-            inicio
-            fin
-            nombre_lugar
-            codigo_asignatura
-            nombre_asignatura
-            nombre_actividad
-            identificador_grupo
-            nombre_grupo
+        final columns: ['asignatura', 'actividad', 'grupo', 'DTSTART', 'DTEND', 'lugar']
+
     '''
+    def convert_dates_to_ics_standard(df):
+        df['DTSTART'] = pd.to_datetime(df['inicio'], utc=True)
+        df['DTSTART'] = df['DTSTART'].dt.strftime('%Y%m%dT%H%M%SZ')
+
+        df['DTEND'] = pd.to_datetime(df['fin'], utc=True)
+        df['DTEND'] = df['DTEND'].dt.strftime('%Y%m%dT%H%M%SZ')
+
+        df.drop('inicio', axis=1,inplace=True)
+        df.drop('fin', axis=1,inplace=True)
+
+        return df
+
     with open('schedule.json', 'r', encoding='utf-8') as f:
         data = json.load(f)  
     
@@ -44,12 +46,28 @@ def convert_schedule_json_to_df():
 
     df = pd.json_normalize(items)
 
-    wanted_columns = ['inicio', 'fin', 'nombre_lugar', 'codigo_asignatura', 'nombre_asignatura', 'nombre_actividad', 'identificador_grupo']
+    wanted_columns = ['inicio', 'fin', 'nombre_lugar', 'nombre_asignatura', 'nombre_actividad', 'identificador_grupo','identificador_edificio'] # , 'codigo_asignatura'
     df = df[wanted_columns]
     
-    print(df.columns.tolist())
-    print()
-    print(df.head())
+    df = convert_dates_to_ics_standard(df)
+
+    # rename any required columns
+    df.rename(columns={
+        'nombre_actividad': 'actividad',
+        'nombre_asignatura': 'asignatura',
+        'identificador_grupo': 'grupo',
+        }, inplace=True)
+
+    df['actividad'] = df['actividad'].str.split(' ').str[0]
+    df['actividad'] = df['actividad'].str.capitalize()
+    df['asignatura'] = df['asignatura'].str.capitalize()
+    
+    df['nombre_lugar'] = df['nombre_lugar'].str.replace("AULA","Class")
+    df['lugar'] = df['nombre_lugar'].str.cat(df['identificador_edificio'], sep=' Building ',na_rep='')
+    df.drop('identificador_edificio', axis=1,inplace=True)
+    df.drop('nombre_lugar', axis=1,inplace=True)
+
+    return df
 
 def convert_event_cal_ics_to_df():
     ''' 
@@ -58,6 +76,7 @@ def convert_event_cal_ics_to_df():
             METHOD:PUBLISH
             PRODID:-//Moodle Pty Ltd//NONSGML Moodle Version 2022112809.02//EN
             VERSION:2.0
+            
             BEGIN:VEVENT
             UID:8314693@aulavirtual.uv.es
             SUMMARY:Asistencia S1 s'obre el
@@ -69,25 +88,64 @@ def convert_event_cal_ics_to_df():
             DTEND:20240925T092000Z
             CATEGORIES:2024-25 Gestió i planificació farmacèutiques Gr.DG-T (34072)
             END:VEVENT
-        categories required:
 
-    '''
+        columns to process: description, dtstamp
+        final columns: ['short_descript', 'last_modified', 'DTSTART', 'DTEND', 'actividad','asignatura']
+        columns to achieve: ['asignatura', 'actividad', 'grupo', 'DTSTART', 'DTEND', 'lugar']
+    ''' 
     ics_file_path = 'event_calendar.ics'
-    with open(ics_file_path, 'r') as f:
+    with open(ics_file_path, 'r',encoding='utf-8') as f:
         calendar = Calendar(f.read())
 
     events = []
     for event in calendar.events:
+        categories_str = event.categories if isinstance(event.categories, str) else ', '.join(event.categories)
+        description_str = event.description if isinstance(event.description, str) else ' '.join(event.description)
+
         events.append({
-            'name': event.name,
-            'begin': event.begin.to('utc'),  # Convert to UTC or any desired timezone
-            'end': event.end.to('utc'),
-            'description': event.description,
-            'location': event.location
+            'short_descript': event.name,
+            # 'class': event.classification,
+            'asignatura': categories_str,
+            # 'dtstamp': event.created.datetime,
+            'DTSTAMP': event.last_modified.datetime,
+            'DTSTART': event.begin.datetime,
+            'DTEND': event.end.datetime,
+            'description': description_str,
         })
 
-    # Convert to DataFrame
     df = pd.DataFrame(events)
 
-    # Show the DataFrame
-    print(df.head())
+    df['DTSTART'] = pd.to_datetime(df['DTSTART'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
+    df['DTEND'] = pd.to_datetime(df['DTEND'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
+    # df['dtstamp'] = pd.to_datetime(df['dtstamp'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
+    df['DTSTAMP'] = pd.to_datetime(df['DTSTAMP'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
+
+    df['asignatura'] = df['asignatura'].str[8:]
+    df['asignatura'] = df['asignatura'].str[0:-8]
+
+    def categorize_activity(short_descript):
+        exercises_keywords = ['cuestionario','questionario','quiz','tarea','evaluación continua']
+        exam_keywords = ['exam','test','examen']
+        obligatory_presence_keywords = ['asistencia', 'tutoría', 'seminario']
+
+        if any(keyword in short_descript.lower() for keyword in exercises_keywords):
+            return 'Exercises'
+        elif any(keyword in short_descript.lower() for keyword in exam_keywords):
+            return 'Exam'
+        elif any(keyword in short_descript.lower() for keyword in obligatory_presence_keywords):
+            return 'Obligatory class'
+        else:
+            return 'event'
+
+    df['SUMMARY'] = df['short_descript'].apply(categorize_activity)
+
+    df['DESCRIPTION'] = df['asignatura'].str.cat(df['short_descript'], sep='. ', na_rep='')
+    df['DESCRIPTION'] = df['DESCRIPTION'].str.cat(df['description'], sep='. ', na_rep='')
+
+    df.drop('asignatura', axis=1, inplace=True) 
+    df.drop('short_descript', axis=1, inplace=True) 
+    df.drop('description', axis=1, inplace=True) 
+    
+    return df
+    
+    

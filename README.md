@@ -14,15 +14,4 @@ Before running the project, make sure to install the necessary dependencies. You
 
     pip install -r requirements.txt
 
-Or manually:
-
-    pip install ics
-    pip install python-dotenv
-    pip install brotli
-    pip install blinker==1.7.0
-    pip install selenium-wire
-    pip install webdriver-manager
-    pip install pandas
-    pip install requests
-
 ## Instructions

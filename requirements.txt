@@ -1,8 +1,8 @@
-ics
-python-dotenv
-brotli
+Brotli==1.1.0
+ics==0.7.2
+pandas==2.2.2
+python-dotenv==1.0.1
+Requests==2.32.3
+selenium==4.24.0
+selenium_wire==5.1.0
 blinker==1.7.0
-selenium-wire
-webdriver-manager
-pandas
-requests

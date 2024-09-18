@@ -1,0 +1,5 @@
+__pycache__/
+.env
+cookies.json
+schedule.json
+event_calendar.ics

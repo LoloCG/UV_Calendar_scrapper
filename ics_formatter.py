@@ -19,10 +19,11 @@ from datetime import datetime
 def main_ics_formater():
     schedule_df = convert_schedule_json_to_df()
     # schedule_df.to_csv('schedule.csv', index=False, sep=';',header=True)
-    # print(schedule_df)
 
     events_df = convert_event_cal_ics_to_df()
     # events_df.to_csv('events.csv', index=False, sep=';',header=True)
+
+    combined_df = join_both_df(schedule_df, events_df)
 
 def convert_schedule_json_to_df():
     '''
@@ -187,5 +188,11 @@ def convert_event_cal_ics_to_df():
     df.drop('description', axis=1, inplace=True) 
     
     return df
-    
-    
+
+def join_both_df(schedule_df, events_df):
+    df = pd.concat([schedule_df, events_df], axis=0)
+    df.to_csv('events.csv', index=False, sep=';', header=True)
+
+    return df
+
+

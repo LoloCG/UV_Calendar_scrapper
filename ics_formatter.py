@@ -1,16 +1,3 @@
-"""
-    For each event:
-    - `BEGIN:VEVENT` / `END:VEVENT`: Marks the start and end of each event in the calendar.
-    - UID: A globally unique identifier for the event (used for synchronization across calendars).
-    - DTSTAMP: The date and time the event was created or last modified, usually in UTC.
-    - DTSTART: The start date and time of the event, in UTC or local time with a time zone.
-    - DTEND
-    - SUMMARY
-    - DESCRIPTION
-    - LOCATION
-    - PRIORITY
-"""
-
 import pandas as pd
 from ics import Calendar, Event
 import json
@@ -66,7 +53,7 @@ def convert_schedule_json_to_df():
         return summary
 
     def obtain_df_from_json():
-        with open('schedule.json', 'r', encoding='utf-8') as f:
+        with open('generated_files/schedule.json', 'r', encoding='utf-8') as f:
             data = json.load(f)  
         
         items = data.get('items', [])  
@@ -147,7 +134,7 @@ def convert_event_cal_ics_to_df():
         else:
             return 'event'
  
-    ics_file_path = 'event_calendar.ics'
+    ics_file_path = 'generated_files/event_calendar.ics'
     with open(ics_file_path, 'r',encoding='utf-8') as f:
         calendar = Calendar(f.read())
 
@@ -171,7 +158,6 @@ def convert_event_cal_ics_to_df():
 
     df['DTSTART'] = pd.to_datetime(df['DTSTART'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
     df['DTEND'] = pd.to_datetime(df['DTEND'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
-    # df['dtstamp'] = pd.to_datetime(df['dtstamp'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
     df['DTSTAMP'] = pd.to_datetime(df['DTSTAMP'], utc=True).dt.strftime('%Y%m%dT%H%M%SZ')
 
     df['asignatura'] = df['asignatura'].str[8:]

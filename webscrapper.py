@@ -42,9 +42,6 @@ def start_webdriver():
 
     driver = webdriver.Firefox(options=options)
     
-    # for both
-    # driver.implicitly_wait(15)
-
 def log_into_intranet():
     global driver, username, password
     timelog(f"Opening login page: {login_url}...")
@@ -115,7 +112,7 @@ def get_schedule_JSON_req():
 
     if calendar_json_data:
         calendar_data = json.loads(calendar_json_data)
-        with open('schedule.json', 'w', encoding='utf-8') as file:
+        with open('generated_files/schedule.json', 'w', encoding='utf-8') as file:
             json.dump(calendar_data, file, ensure_ascii=False, indent=4)
 
             timelog(f"Calendar info converted to local JSON file...")
@@ -170,7 +167,7 @@ def get_calendar_ics():
     timelog(f"Obtaining event calendar file.")
     ics_response = requests.get(export_url_ele)
     
-    ics_file_path = 'event_calendar.ics'
+    ics_file_path = 'generated_files/event_calendar.ics'
     with open(ics_file_path, 'wb') as f:
         f.write(ics_response.content)
 

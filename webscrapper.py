@@ -74,14 +74,12 @@ def start_webdriver():
         elif pref_webdriver == 'chrome': driver = start_chrome()
         elif pref_webdriver == 'safari': driver = start_safari()
         return 
-
-    
+ 
     if platform.system() == "Darwin":
         timelog(f"Initiating Safari WebDriver...")
         start_timer()
         driver = start_safari()
         return
-
 
     browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
 
@@ -93,13 +91,13 @@ def start_webdriver():
     else:
         timelog(f"Initiating Chrome WebDriver...")
         driver = start_chrome()
-
+    
 
 def log_into_intranet():
     global driver, username, password
-    timelog(f"Opening login page: {login_url}...")
+    timelog(f"Opening login page: {login_url} (might take up to 20s).")
     driver.get(login_url)
-    timelog(f"Loading login page (might take up to 30s).")
+    timelog(f"Loading login page elements.")
     user_box_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "username")))
     timelog(f"Page elements loaded...")
     user_box_element.send_keys(username)
@@ -141,7 +139,7 @@ def enter_schedule_pag():
                 retries += 1 
 
         except:
-            timelog(f"Succesfully entered schedule URL webpage ({driver.current_url})")
+            timelog(f"Succesfully entered Schedule URL webpage ({driver.current_url})")
             break  
 
         if retries >= max_retries:
@@ -197,16 +195,16 @@ def get_calendar_ics():
     timelog(f"Opening event calendar page: {event_calendar_url}.")
     driver.get(event_calendar_url)
 
-    aules_login_internal = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'theme_boost_union-loginorder-idp')))
+    aules_login_internal = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, 'theme_boost_union-loginorder-idp')))
     
     if aules_login_internal:
         log_into_aules()
-        all_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'page-header-headings')))
+        all_button = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, 'page-header-headings')))
         timelog(f"Opening event calendar page: {event_calendar_url}.")
         driver.get(event_calendar_url)
 
     all_button_id = "id_events_exportevents_all"
-    all_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, all_button_id)))
+    all_button = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, all_button_id)))
     timelog(f"Page elements loaded. Obtaining download URL...")
     all_button.click()
 
@@ -214,7 +212,7 @@ def get_calendar_ics():
     
     driver.find_element(By.ID, "id_generateurl").click()
 
-    export_url_ele = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "calendarexporturl")))
+    export_url_ele = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.ID, "calendarexporturl")))
     export_url_ele = export_url_ele.get_attribute("value")
 
     timelog(f"Obtaining event calendar file.")

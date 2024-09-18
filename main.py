@@ -31,6 +31,7 @@ def check_already_created_files():
 
     if os.path.isfile(ics_file_path) and os.path.isfile(schedule_file_path):
         print(f"Both 'event_calendar.ics' and 'schedule.json' are present in the root directory.")
+        start_timer()
         return True
     else: return False
 

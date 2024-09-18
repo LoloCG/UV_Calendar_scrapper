@@ -12,18 +12,18 @@
 """
 
 import pandas as pd
-from ics import Calendar
+from ics import Calendar, Event
 import json
 from datetime import datetime
 
 def main_ics_formater():
     schedule_df = convert_schedule_json_to_df()
-    # schedule_df.to_csv('schedule.csv', index=False, sep=';',header=True)
 
     events_df = convert_event_cal_ics_to_df()
-    # events_df.to_csv('events.csv', index=False, sep=';',header=True)
 
     combined_df = join_both_df(schedule_df, events_df)
+
+    convert_df_to_ics(combined_df)
 
 def convert_schedule_json_to_df():
     '''
@@ -191,8 +191,27 @@ def convert_event_cal_ics_to_df():
 
 def join_both_df(schedule_df, events_df):
     df = pd.concat([schedule_df, events_df], axis=0)
-    df.to_csv('events.csv', index=False, sep=';', header=True)
 
     return df
 
+def convert_df_to_ics(df):
+    calendar = Calendar()
 
+    for _, row in df.iterrows():
+        event = Event()
+
+        event.name = row['SUMMARY']
+        event.begin = row['DTSTART']
+        event.end = row['DTEND']
+        event.location = str(row.get('LOCATION', ''))
+        event.description = str(row.get('DESCRIPTION', ''))
+        event.priority = row.get('PRIORITY', '')
+        event.dtstamp = row.get('DTSTAMP', '')
+
+        calendar.events.add(event)
+
+    filename='university_calendar.ics'
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.writelines(calendar)
+
+    print(f"Calendar saved to {filename}")

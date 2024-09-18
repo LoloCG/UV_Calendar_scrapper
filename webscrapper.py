@@ -66,9 +66,13 @@ def start_webdriver():
         browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
         
         start_timer()
-        timelog(f"Initiating WebDriver...")
-        if browser_select == 1: driver = start_firefox() 
-        else: driver = start_chrome()
+        
+        if browser_select == str(1):
+            timelog(f"Initiating Firefox WebDriver...")
+            driver = start_firefox() 
+        else:
+            timelog(f"Initiating Chrome WebDriver...")
+            driver = start_chrome()
 
     else: 
         start_timer()
@@ -146,7 +150,7 @@ def get_schedule_JSON_req():
 
     if calendar_json_data:
         calendar_data = json.loads(calendar_json_data)
-        with open('generated_files/schedule.json', 'w', encoding='utf-8') as file:
+        with open('schedule.json', 'w', encoding='utf-8') as file:
             json.dump(calendar_data, file, ensure_ascii=False, indent=4)
 
             timelog(f"Calendar info converted to local JSON file...")
@@ -201,7 +205,7 @@ def get_calendar_ics():
     timelog(f"Obtaining event calendar file.")
     ics_response = requests.get(export_url_ele)
     
-    ics_file_path = 'generated_files/event_calendar.ics'
+    ics_file_path = 'event_calendar.ics'
     with open(ics_file_path, 'wb') as f:
         f.write(ics_response.content)
 

@@ -17,16 +17,14 @@ Resulting calendar in Google Calendar:
   - [Differences with old manual import](#differences-with-old-manual-import)
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
-  - [Dependencies](#dependencies)
 - [Usage](#usage)
 
 # Installation
-## Dependencies
-Before running the project, make sure to install the necessary dependencies. You can install all of them directly using the command:
+The .exe file can be downloaded through the latest [release page](https://github.com/LoloCG/UV_Calendar_scrapper/releases/), or directly [here](https://github.com/LoloCG/UV_Calendar_scrapper/releases/download/v1.0/main.exe)
 
-    pip install -r requirements.txt
 
 # Usage
+Once 
 Example terminal output (from VSCode):
 ![terminal example text](terminal_example.png)
 

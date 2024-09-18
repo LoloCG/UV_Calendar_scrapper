@@ -1,15 +1,15 @@
 import requests
 import json
 import brotli
+
 from seleniumwire import webdriver  
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.service import Service
-
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from utils import *
 
@@ -30,11 +30,11 @@ def selenium_get_schedule_main(username_get, password_get):
     enter_schedule_pag()
     get_schedule_JSON_req()
     get_calendar_ics()
-
+    driver.quit()
+    
 def start_webdriver():
     def start_firefox():
-        global driver
-        options = Options()
+        options = FirefoxOptions()
         # options.headless = True  # Enable headless mode
         options.set_preference("dom.webnotifications.enabled", False)  # Disable notifications
         options.set_preference("permissions.default.image", 2)  # Disable image loading
@@ -46,8 +46,7 @@ def start_webdriver():
         return driver
 
     def start_chrome():
-        global driver
-        options = Options()
+        options = ChromeOptions()
         
         # options.add_argument("--headless")
         options.add_argument("--disable-notifications")
@@ -62,13 +61,20 @@ def start_webdriver():
 
     global driver
 
-    browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
-    
-    if browser_select == 1: driver = start_firefox() 
-    else: driver = start_chrome()
+    pref_webdriver = check_browser_preference()
+    if not pref_webdriver:
+        browser_select = input(f"Enter '1' for Firefox, '2' for Chrome browser: ")
+        
+        start_timer()
+        timelog(f"Initiating WebDriver...")
+        if browser_select == 1: driver = start_firefox() 
+        else: driver = start_chrome()
 
-    start_timer()
-    timelog(f"Initiating WebDriver...")
+    else: 
+        start_timer()
+        timelog(f"Initiating WebDriver...")
+        if pref_webdriver == 'firefox': driver = start_firefox() 
+        else: driver = start_chrome()
 
 def log_into_intranet():
     global driver, username, password

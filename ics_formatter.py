@@ -10,8 +10,10 @@ def main_ics_formater():
     events_df = convert_event_cal_ics_to_df()
 
     combined_df = join_both_df(schedule_df, events_df)
-
-    convert_df_to_ics(combined_df)
+    
+    final_df = hash_df_event_UID(combined_df)
+    
+    # convert_df_to_ics(final_df)
 
 def convert_schedule_json_to_df():
     def convert_dates_to_ics_standard(df):
@@ -151,9 +153,24 @@ def convert_event_cal_ics_to_df():
     
     return df
 
+def hash_df_event_UID(df):
+    df['UID'] = None
+
+    for index, row in df.iterrows():
+        unique_string = f"{row['SUMMARY']}{row['LOCATION']}{row['DESCRIPTION']}{row['DTSTAMP']}{row['DTSTART']}{row['DTEND']}"
+        unique_string = unique_string.replace(" ", "")
+
+        uid = hashlib.sha1(unique_string.encode('utf-8')).hexdigest()
+        df.at[index, 'UID'] = uid
+        
+    if not (len(df['UID'].unique())/len(df)) == 1:
+        timelog(f"ERROR: There seems to be repeating events in the calendar.")
+
+    return df
+
 def join_both_df(schedule_df, events_df):
     timelog(f"Merging data.")
-    df = pd.concat([schedule_df, events_df], axis=0)
+    df = pd.concat([schedule_df, events_df], axis=0).reset_index()
 
     return df
 
@@ -171,6 +188,7 @@ def convert_df_to_ics(df):
         event.description = str(row.get('DESCRIPTION', ''))
         event.priority = row.get('PRIORITY', '')
         event.dtstamp = row.get('DTSTAMP', '')
+        event.uid = row.get('UID','')
 
         calendar.events.add(event)
 

@@ -10,3 +10,4 @@ university_calendar.ics
 dist/
 build/
 main.spec
+credentials.json

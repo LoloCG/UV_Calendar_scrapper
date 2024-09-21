@@ -1,3 +1,4 @@
+import hashlib
 import pandas as pd
 from ics import Calendar, Event
 import json
@@ -13,7 +14,7 @@ def main_ics_formater():
     
     final_df = hash_df_event_UID(combined_df)
     
-    # convert_df_to_ics(final_df)
+    convert_df_to_ics(final_df)
 
 def convert_schedule_json_to_df():
     def convert_dates_to_ics_standard(df):

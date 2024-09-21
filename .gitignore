@@ -6,7 +6,8 @@ event_calendar.ics
 events.csv
 schedule.csv
 university_calendar.ics
-venv/
+.venv/
 dist/
 build/
 main.spec
+credentials.json

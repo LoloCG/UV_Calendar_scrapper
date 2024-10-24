@@ -112,6 +112,7 @@ def convert_event_cal_ics_to_df():
             return 'Obligatory class'
         else:
             return 'event'
+            
     timelog(f"Converting data from Event Calendar.")
     ics_file_path = 'event_calendar.ics'
     with open(ics_file_path, 'r',encoding='utf-8') as f:
@@ -162,7 +163,7 @@ def hash_df_event_UID(df):
         unique_string = unique_string.replace(" ", "")
 
         uid = hashlib.sha1(unique_string.encode('utf-8')).hexdigest()
-        df.at[index, 'UID'] = uid
+        df.at[index, 'UID'] = uid + "@university"
         
     if not (len(df['UID'].unique())/len(df)) == 1:
         timelog(f"ERROR: There seems to be repeating events in the calendar.")

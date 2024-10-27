@@ -11,3 +11,4 @@ dist/
 build/
 main.spec
 credentials.json
+venv/

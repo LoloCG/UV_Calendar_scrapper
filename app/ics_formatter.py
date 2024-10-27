@@ -3,7 +3,9 @@ import pandas as pd
 from ics import Calendar, Event
 import json
 from datetime import datetime
-from utils import *
+from PyLogger.basic_logger import LoggerSingleton
+
+logger = LoggerSingleton().get_logger()
 
 def main_ics_formater():
     schedule_df = convert_schedule_json_to_df()
@@ -54,14 +56,15 @@ def convert_schedule_json_to_df():
         return summary
 
     def obtain_df_from_json():
-        with open('schedule.json', 'r', encoding='utf-8') as f:
+        with open(r'app\data\schedule.json', 'r', encoding='utf-8') as f:
             data = json.load(f)  
         
         items = data.get('items', [])  
 
         df = pd.json_normalize(items)
         return df
-    timelog(f"Converting data from Schedule Calendar.")
+        
+    logger.info(f"Converting data from Schedule Calendar.")
     df = obtain_df_from_json()
 
     wanted_columns = ['inicio', 'fin', 'nombre_lugar', 'nombre_asignatura', 'nombre_actividad', 'identificador_grupo','identificador_edificio'] # , 'codigo_asignatura'
@@ -113,8 +116,8 @@ def convert_event_cal_ics_to_df():
         else:
             return 'event'
             
-    timelog(f"Converting data from Event Calendar.")
-    ics_file_path = 'event_calendar.ics'
+    logger.info(f"Converting data from Event Calendar.")
+    ics_file_path = r'app\data\event_calendar.ics'
     with open(ics_file_path, 'r',encoding='utf-8') as f:
         calendar = Calendar(f.read())
 
@@ -166,18 +169,18 @@ def hash_df_event_UID(df):
         df.at[index, 'UID'] = uid + "@university"
         
     if not (len(df['UID'].unique())/len(df)) == 1:
-        timelog(f"ERROR: There seems to be repeating events in the calendar.")
+        logger.warning(f"There seems to be repeating events in the calendar.")
 
     return df
 
 def join_both_df(schedule_df, events_df):
-    timelog(f"Merging data.")
+    logger.info(f"Merging data.")
     df = pd.concat([schedule_df, events_df], axis=0).reset_index()
 
     return df
 
 def convert_df_to_ics(df):
-    timelog(f"Converting data into .ics file.")
+    logger.info(f"Converting data into .ics file.")
     calendar = Calendar()
 
     for _, row in df.iterrows():
@@ -194,8 +197,8 @@ def convert_df_to_ics(df):
 
         calendar.events.add(event)
 
-    filename='university_calendar.ics'
+    filename=r'app\data\university_calendar.ics'
     with open(filename, 'w', encoding='utf-8') as f:
         f.writelines(calendar)
 
-    timelog(f"Final Calendar saved as {filename}. <--")
+    logger.info(f"Final Calendar saved as {filename}. <--")

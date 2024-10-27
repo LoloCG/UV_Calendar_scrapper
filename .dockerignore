@@ -1,0 +1,33 @@
+# Environment files
+.env
+
+# Local image files
+images/
+
+# Virtual environment directory
+venv/
+
+# Python cache files
+__pycache__/
+
+# Git files
+.git
+.gitignore
+
+# Documentation
+LICENSE
+README.md
+
+# Logs and other runtime data
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.old
+
+# Development tools
+.vscode
+.idea

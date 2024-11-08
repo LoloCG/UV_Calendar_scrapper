@@ -7,15 +7,15 @@ from PyLogger.basic_logger import LoggerSingleton
 username, password = None, None
 
 def main():  
-    # if not check_already_created_files():
-    #     global username, password
-    #     logger.info("Starting script...")
+    if not check_already_created_files():
+        global username, password
+        logger.info("Starting script...")
 
-    #     username, password = get_accout_credentials()
+        username, password = get_accout_credentials()
 
-    #     wsr.selenium_get_schedule_main(username, password)
+        wsr.selenium_get_schedule_main(username, password)
 
-    # icsf.main_ics_formater()
+    icsf.main_ics_formater()
     
     delete_leftover_files()
     
@@ -35,7 +35,7 @@ def check_already_created_files():
 
 def delete_leftover_files():
     logger.debug(f"Deleting garbage files generated.")
-    files_to_remove = [r"data\event_calendar.ics", r"data\schedule.json"]
+    files_to_remove = [r".\data\event_calendar.ics", r".\data\schedule.json"]
     for file_path in files_to_remove:
         if os.path.exists(file_path):
             os.remove(file_path)

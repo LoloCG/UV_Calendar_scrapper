@@ -1,0 +1,4 @@
+{
+    "webdriver": "firefox",
+    "headless": "False"
+}

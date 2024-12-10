@@ -7,13 +7,12 @@ from PyLogger.basic_logger import LoggerSingleton
 username, password = None, None
 
 def main():  
-    if not check_already_created_files():
-        global username, password
-        logger.info("Starting script...")
+    global username, password
+    logger.info("Starting script...")
 
-        username, password = get_accout_credentials()
+    username, password = get_accout_credentials()
 
-        wsr.selenium_get_schedule_main(username, password)
+    wsr.selenium_get_schedule_main(username, password)
 
     icsf.main_ics_formater()
     
@@ -21,21 +20,13 @@ def main():
     
     logger.info("Ending program.")
 
-def check_already_created_files():
-    root_dir = os.getcwd()
-
-    ics_file_path = os.path.join(root_dir, 'event_calendar.ics')
-    schedule_file_path = os.path.join(root_dir, 'schedule.json')
-
-    if os.path.isfile(ics_file_path) and os.path.isfile(schedule_file_path):
-        print(f"Both 'event_calendar.ics' and 'schedule.json' are present in the root directory.")
-        start_timer()
-        return True
-    else: return False
-
 def delete_leftover_files():
     logger.debug(f"Deleting garbage files generated.")
-    files_to_remove = [r".\data\event_calendar.ics", r".\data\schedule.json"]
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    files_to_remove = [
+        os.path.join(base_dir, "data", "event_calendar.ics"),
+        os.path.join(base_dir, "data", "schedule.json")
+    ]
     for file_path in files_to_remove:
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -69,3 +60,16 @@ if __name__ == '__main__':
     logger = logger_instance.get_logger()
     logger.debug("Version v1.3.")
     main()
+
+# UNUSED Functions
+def check_already_created_files():
+    root_dir = os.getcwd()
+
+    ics_file_path = os.path.join(root_dir, 'event_calendar.ics')
+    schedule_file_path = os.path.join(root_dir, 'schedule.json')
+
+    if os.path.isfile(ics_file_path) and os.path.isfile(schedule_file_path):
+        print(f"Both 'event_calendar.ics' and 'schedule.json' are present in the root directory.")
+        start_timer()
+        return True
+    else: return False
